@@ -1,0 +1,38 @@
+# ワークフローの名前
+name: Upload CSV to Firebase Storage
+
+# ワークフローが実行されるタイミングを指定
+on:
+  push:
+    branches:
+      - main  # mainブランチにpushされた時のみ実行
+
+# 実行する一連の処理（ジョブ）を定義
+jobs:
+  deploy:
+    # 実行環境を指定（最新のUbuntuを使用）
+    runs-on: ubuntu-latest
+
+    # 処理のステップを定義
+    steps:
+      # ステップ1: リポジトリのコードをチェックアウトする
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ステップ2: Google Cloudへ認証する
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+
+      # ステップ3: Google Cloud SDK (gcloud CLI) をセットアップする
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ステップ4: CSVファイルをFirebase Storageにアップロードする
+      - name: Upload CSV to Firebase Storage
+        run: |
+          # gsutil cp <リポジトリ内のCSVファイルパス> gs://<バケット名>/<アップロード先のパス>
+          gsutil cp problem_sets.csv gs://hinotamalog.firebasestorage.app/problem_sets.csv
+          gsutil cp problems.csv gs://hinotamalog.firebasestorage.app/problems.csv
